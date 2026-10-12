@@ -1,0 +1,40 @@
+# Sample requests (VS Code "REST Client" extension or JetBrains HTTP client).
+@base = http://localhost:7071/api
+
+### 1. Function chaining
+POST {{base}}/orchestrators/FunctionChainingOrchestrator?wait=10
+Content-Type: application/json
+
+{ "orderId": "A-100", "customerEmail": "jane@example.com",
+  "items": [{ "sku": "BOOK-1", "quantity": 2, "unitPrice": 15 }, { "sku": "PEN-9", "quantity": 5, "unitPrice": 2 }] }
+
+### 2. Fan-out / fan-in
+POST {{base}}/orchestrators/FanOutFanInOrchestrator
+Content-Type: application/json
+
+{ "folder": "invoices/2026-10", "fileCount": 10 }
+
+### 3a. Async HTTP API: start (returns 202 + Location)
+POST {{base}}/reports
+Content-Type: application/json
+
+{ "reportName": "Q3-sales", "sections": 5 }
+
+### 3b. Async HTTP API: poll (paste the instanceId from 3a)
+GET {{base}}/reports/<instanceId>/status
+
+### 4. Monitor
+POST {{base}}/orchestrators/MonitorOrchestrator
+Content-Type: application/json
+
+{ "jobId": "job-42", "pollingIntervalSeconds": 10, "expiryMinutes": 5 }
+
+### 5a. Human interaction: start (approve/reject links are printed in the func host log)
+POST {{base}}/approvals
+Content-Type: application/json
+
+{ "requestedBy": "jane", "description": "New laptop", "amount": 2400,
+  "approverEmail": "manager@example.com", "timeoutMinutes": 2 }
+
+### 5b. Human interaction: respond (copy the link from the log)
+GET {{base}}/approvals/<instanceId>/respond?decision=approve&token=<token>
